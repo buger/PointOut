@@ -1,0 +1,56 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>PointOut - Share your ideas simply.</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=8;FF=3;OtherUA=4" />
+        <meta name="keywords" content="pointout, image, commenting, sharing" /> 
+        <meta http-equiv="Content-Language" content="en-us" /> 
+        <meta name="author" content="PointOut" /> 
+        <meta name="copyright" content="Copyright by PointOut. All Rights Reserved." />
+        <meta name="description" content="Collaborative discussion of screenshots or any other images. Just upload your image and start commenting" />
+
+        <link rel="stylesheet" type="text/css" href="/css/main.css" />
+        <link rel="stylesheet" type="text/css" href="/css/baloon.css" />
+
+        <script src="/js/jquery.min.js"></script> 
+        <script src="/js/jquery.tmpl.min.js"></script> 
+
+        <script src="/js/commenter.js"></script>
+        <script src="/js/main.js"></script>
+
+        <script id="point_template" type="text/x-jquery-tmpl">
+            <div class='point' style='top:${y}px; left:${x}px'>
+                <div class='label'>${label}</div>
+                <div class='overview triangle-border top'>
+                    <div class='image'>
+                        <img class='author_image' width='50px' height='50px' src='/images/empty_avatar.png' />
+                    </div>
+                    <div class='description'>
+                        <span class='author'>${comments[0].author_name}</span>wrote:
+                        <p class='text'>${comments[0].text}</p>
+                    </div>
+                    <div class='clear'></div>
+                </div>
+            </div>
+        </script>
+
+        </script>
+    </head>
+    <body>        
+        <div id="start_screen" class="br_8">
+            <label>Upload image</label>
+            <input type="file" id="file_uploader" />
+            <br/>
+            <br/>
+            <span style="font-size: 30px">Try <a href="javascript:;" id="show_demo">demo</a></span>
+        </div>        
+        <div id="workspace" class="hidden">            
+            <div id="toolbar">
+                <span id="toolbar_logo">
+                    <span class="first">Point</span><span class="last">Out</span>
+                </span>
+            </div>
+            <img id="image" />
+        </div>        
+    </body>
+</html>

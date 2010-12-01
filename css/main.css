@@ -1,0 +1,129 @@
+/* Utils */
+
+* { margin:0; padding:0}
+
+.dbg_r { border: 1px solid red; }
+.dbg_g { border: 1px solid green; }
+.dbg_b { border: 1px solid black; }
+
+.hidden { display: none; } 
+
+.br_8 {
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px
+}
+
+.clear { clear: both }
+/* Interface */
+
+body { 
+    width: 100%; 
+    height: 100%; 
+    font-family: helvetica, arial, sans-serif;
+    font-size: 12px;
+    color: #333;
+}
+
+#start_screen {
+    -webkit-box-shadow: #777 0px 4px 10px;
+    -moz-box-shadow: #777 0px 4px 10px;
+    -webkit-transition: all 0,5s;
+    background-color: white;
+
+    border: 1px solid #AAA;    
+    padding: 20px 25px 25px;
+    width: 450px;
+    left: 50%;
+    top: 50%;
+    margin-left: -225px;
+    margin-top: -160px;    
+    position: absolute;
+
+    font-size: 21px;
+}
+
+#workspace {
+    width: 100%;
+    height: 100%;
+    padding-top: 40px; //for toolbar
+}
+
+#image {
+    max-width: 100%;
+}
+
+#toolbar {
+    position: fixed;
+    top: 0px;
+    left:0px;
+    width: 100%;
+    height: 40px;
+    background: #fff;
+
+    -webkit-box-shadow: #777 0px 0px 10px;
+    -moz-box-shadow: #777 0px 0px 10px;
+
+    z-index: 10;
+}
+
+#toolbar_logo {
+    font-size: 32px;
+    padding-left: 10px;
+    font-weight: bold;
+    font-family: Verdana;
+}
+
+#toolbar_logo span { margin: 0; padding:0;}    
+#toolbar_logo span.first { color: #000; } 
+#toolbar_logo span.last { color: #aaa; } 
+
+.point {
+    position: absolute;
+    margin-left: -15px;
+    margin-top: -15px;
+    cursor: pointer;
+}
+
+.point .label {
+    width: 20px;
+    height: 20px;
+    padding: 5px;
+    text-align: center;
+
+    border-radius: 30px;
+    -moz-border-radius: 30px;
+
+    font-weight: bold;
+    font-size: 18px;
+    color: #fff;
+
+    border: 1px solid #333;
+    background: #5D8AA8;
+    opacity: 0.7;
+}
+
+.point .overview {
+    border: 2px solid #ccc;
+    -webkit-box-shadow: #777 0px 4px 10px;
+    -moz-box-shadow: #777 0px 4px 10px;
+
+    margin-left: -21px;
+    margin-top: 6px;
+
+    position: relative;
+    height: 50px;
+    padding: 10px;
+}
+
+.point .overview div { float: left; }
+
+.point .overview .description { margin-left: 5px; }
+.point .overview .description .author { font-weight: bold; margin-right: 5px;}
+.point .overview .description .text { 
+    padding-top: 5px; 
+    max-width: 300px;
+    height: 30px;
+    max-width: 300px;
+    overflow: hidden;
+}
