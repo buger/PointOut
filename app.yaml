@@ -13,5 +13,13 @@ handlers:
 - url: /images
   static_dir: images
 
+- url: /
+  static_files: index.html
+  upload: index.html
+
 - url: /.*
   script: pointout.py
+
+builtins:
+- datastore_admin: on
+- appstats: on

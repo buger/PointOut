@@ -39,7 +39,7 @@ $(document).ready(function(){
             */
 
             // Render thumbnail template with the file info (data object).
-            document.getElementById('image').src = evt.target.result;
+            WorkspaceManager.getActiveWorkspace().loadProject(evt.target.result);
 
             showWorkspace();
           };
@@ -54,7 +54,7 @@ $(document).ready(function(){
     })
 
     WorkspaceManager.createWorkspace();
-    //loadDemo();
+    loadDemo();
 })
 
 function showWorkspace(){
@@ -69,6 +69,7 @@ function loadDemo(){
                 'label': '1',
                 'x': 300,
                 'y': 200,
+                'color': 'blue',
                 'comments': [
                     {
                         'author_name': 'ted',
@@ -80,6 +81,7 @@ function loadDemo(){
                 'label': '2',
                 'x': 250,
                 'y': 400,
+                'color': 'red',
                 'comments': [
                     {
                         'author_name': 'bob',                        

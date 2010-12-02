@@ -14,7 +14,9 @@
     border-radius: 8px
 }
 
-.clear { clear: both }
+.clear { clear: both; line-height: 1px; font-size: 1px; }
+
+.align_right { text-align: right; }
 /* Interface */
 
 body { 
@@ -23,6 +25,13 @@ body {
     font-family: helvetica, arial, sans-serif;
     font-size: 12px;
     color: #333;
+}
+
+textarea {
+    border: 1px solid #BDC7D8;
+    font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
+    font-size: 11px;
+    padding: 3px;
 }
 
 #start_screen {
@@ -47,10 +56,6 @@ body {
     width: 100%;
     height: 100%;
     padding-top: 40px; //for toolbar
-}
-
-#image {
-    max-width: 100%;
 }
 
 #toolbar {
@@ -102,6 +107,12 @@ body {
     background: #5D8AA8;
     opacity: 0.7;
 }
+.point.opened .label, .point:hover .label { opacity: 0.9; }
+
+.point.red .label { background: #CB4154; }
+.point.blue .label { background: #5D8AA8; }
+.point.green .label { background: #50C878; color: #333; }
+.point.gray .label { background: #DCDCDC; color: #333; }
 
 .point .overview {
     border: 2px solid #ccc;
@@ -110,20 +121,141 @@ body {
 
     margin-left: -21px;
     margin-top: 6px;
+    margin-bottom: 20px;
 
     position: relative;
-    height: 50px;
     padding: 10px;
+    padding-bottom: 5px;
+
+    display:none;
 }
 
-.point .overview div { float: left; }
+.point:hover .overview, .point.opened .overview, .point .comment.edit_mode .form { display: block; }
+
+.point .comment.edit_mode .preview { display:none; }
+
+/* Point preview */
+
+.point .overview .preview {
+    height: 50px;   
+    position: relative;
+    clear: both;
+}
+
+.point .overview .preview div { float: left; }
 
 .point .overview .description { margin-left: 5px; }
 .point .overview .description .author { font-weight: bold; margin-right: 5px;}
+
 .point .overview .description .text { 
     padding-top: 5px; 
-    max-width: 300px;
     height: 30px;
     max-width: 300px;
+    min-width: 250px;
     overflow: hidden;
+    cursor: text;
 }
+
+
+/* Point form */
+
+.point .form { 
+    display: none;
+    width: 300px;
+    height: 60px;
+    cursor: default;
+
+    position: relative;
+}
+
+.point .comment.edit_mode .form { display: block; }
+
+.point .form textarea {
+    width: 290px;
+    color: #333;
+
+    margin-bottom: 2px;
+
+    resize: none;
+}
+
+.point .form .save {
+    padding: 1px 7px 1px 7px;
+    cursor: pointer;
+    position: absolute;
+    left: 0px;
+}
+
+.point .form .delete {
+    cursor: pointer;
+
+    text-decoration: none;
+    color: red;
+
+    position: absolute;
+    right: 0px;
+    bottom: -3px;
+}
+
+
+.point .colors { 
+    display: inline; 
+    position: relative; 
+}
+
+.point .colors div { 
+    cursor: pointer;
+    float: left; 
+    width: 13px; 
+    height: 13px;
+    margin: 3px;
+    border: 1px solid #ccc;
+}
+
+.point .colors div:hover {
+    border: 1px solid #000;
+}
+
+.point .colors div:first-child { margin-left: 50px; }
+
+.point .colors .red { background: #CB4154; }
+.point .colors .blue { background: #5D8AA8; }
+.point .colors .green { background: #50C878; }
+.point .colors .gray { background: #DCDCDC; }
+
+/* Active color */
+.point.red .colors .red, 
+.point.blue .colors .blue,
+.point.green .colors .green,
+.point.gray .colors .gray { border: 1px solid #000 }
+
+/* Add comment */
+
+.point .new_comment_container {
+    text-align: right;
+    padding-top: 5px;
+    padding-right: 5px;
+    padding-bottom: 25px;
+}
+
+.point .new_comment_container.colapsed { padding-bottom: 0px; }
+
+.point textarea { 
+    width: 100%; 
+    height: 29px;
+    resize: none;    
+}
+
+.point .new_comment_container.colapsed textarea {
+    height: 14px;
+    color: #777;
+}
+
+.point .new_comment_container .submit {
+    padding: 1px 7px 1px 7px;
+    cursor: pointer;
+    position: absolute;
+    right: 7px;
+    bottom: 7px;
+}
+.point .new_comment_container.colapsed .submit { display: none; }
