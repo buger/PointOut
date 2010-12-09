@@ -27,19 +27,9 @@ $(document).ready(function(){
         // Create a closure to capture the file information.
         reader.onload = (function(aFile) {
           return function(evt) {
-            /*var data = {
-              'file': {
-                'name': aFile.name,
-                'src': evt.target.result,
-                'fileSize': aFile.fileSize,
-                'type': aFile.type,
-                'rotate': deg
-              }
-            };
-            */
-
             // Render thumbnail template with the file info (data object).
-            WorkspaceManager.getActiveWorkspace().loadProject(evt.target.result);
+            var ws = WorkspaceManager.getActiveWorkspace();
+            ws.createProject(evt.target.result);
 
             showWorkspace();
           };
@@ -54,12 +44,12 @@ $(document).ready(function(){
     })
 
     WorkspaceManager.createWorkspace();
-    loadDemo();
+    //loadDemo();
 })
 
 function showWorkspace(){
-    $('#workspace').removeClass('hidden');
-    $('#start_screen').addClass('hidden');
+    $('#workspace').show()
+    $('#start_screen').hide();
 }
 
 function loadDemo(){

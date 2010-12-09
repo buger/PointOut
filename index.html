@@ -12,27 +12,43 @@
         <link rel="stylesheet" type="text/css" href="/css/main.css" />
         <link rel="stylesheet" type="text/css" href="/css/baloon.css" />
 
+        <script src='/_ah/channel/jsapi'></script>
+
         <script src="/js/math.uuid.js"></script> 
 
         <script src="/js/jquery.min.js"></script> 
         <script src="/js/jquery-ui.min.js"></script> 
         <script src="/js/jquery.tmpl.min.js"></script> 
+        <script src="/js/jquery.ba-bbq.min.js"></script>
 
+        <script src="/js/pointout.js"></script>
         <script src="/js/workspace.js"></script>
         <script src="/js/main.js"></script>
 
+        <script id="connected_users_template" type="text/x-jquery-tmpl">
+            <ul>
+                {{each users}}
+                    {{if $value.id != current_user.id}}
+                        <li class="linear_grad" title="Users watching this project right now">${$value.name}<img src="/images/green_dot.png" /></li>
+                    {{/if}}
+                {{/each}}
+            </ul>
+        </script>
+        <script>
+            var connected_users_template = $('#connected_users_template');
+        </script>
         <script id="point_template" type="text/x-jquery-tmpl">
-            <div class='point ${color}' style='top:${y}px; left:${x}px' id="${uuid}">
-                <div class='label'>${label}</div>
+            <div class='point ${point.color}' style='top:${point.y}px; left:${point.x}px' id="${point.uuid}">
+                <div class='label'>${point.label}</div>
                 <div class='overview triangle-border top'>
-                    {{each comments}}
-                    <div class="comment {{if $index == edit_comment}}edit_mode{{/if}}" data-index="${$index}" data-author="${$value.author_name}">
-                        {{if $index == 0 || $index == comments.length-1}}
+                    {{each point.comments}}
+                    <div class="comment {{if $index == edit_comment}}edit_mode{{/if}}" data-index="${$index}" data-author="${$value.author_name}" data-author-image="${$value.author_image}">
+                        {{if $index == 0 || $index == point.comments.length-1}}
                         <div class="form">
                             <textarea>${$value.text}</textarea>                        
                             <input type="button" class="save" value="OK" />
                             {{if $index == 0}}
-                            <div class="colors">
+                            <div class="colors" style="display: none">
                                 <div class="blue"></div>
                                 <div class="red"></div>
                                 <div class="green"></div>
@@ -43,7 +59,7 @@
                         {{/if}}
                         <div class="preview">
                             <div class='image'>
-                                <img class='author_image' width='50px' height='50px' src='/images/empty_avatar.png' />
+                                <img class='author_image' width='50px' height='50px' src='${$value.author_image||'/images/empty_avatar.png'}' />
                             </div>
                             <div class='description'>
                                 <span class='author'>${$value.author_name}</span>{{if $value.text}}wrote:{{else}}didn't wrote anything {{/if}}
@@ -52,58 +68,102 @@
                         </div>
                     </div>
                     {{/each}}
-                    {{if !(comments.length == 1 && edit_comment == 0)}}
-                    <div class="comment new_comment_container colapsed" data-author='buger'>
-                        <textarea class="new_comment">Write a comment...</textarea>
-                        <input type="submit" value="Comment" class="submit" />
-                    </div>
+                    {{if !(point.comments.length == 1 && edit_comment == 0)}}
+                    <div class="comment new_comment_container colapsed" data-author='${user.name}' data-author-image='${user.image}'>
+                        {{if !user.name }}
+                            <a href="javascript:FB.login()" class="fb_login"><img src="/images/fb-login-button.png"/></a>
+                        {{else}}                        
+                            <textarea class="new_comment" spellcheck='false'>Write a comment...</textarea>
+                            <input type="submit" value="Comment" class="submit" />
+                        {{/if}}
+                        </div>
                     {{/if}}
                 </div>
             </div>
-        </script>
+        </script>        
         <script>
             var point_template = $('#point_template');
         </script>
     </head>
-    <body>        
-        <div id="start_screen" class="br_8">
+    <body>     
+        <div id="start_screen" class="br_8" style="display: none">
             <label>Upload image</label>
             <input type="file" id="file_uploader" />
             <br/>
             <br/>
             <span style="font-size: 30px">Try <a href="javascript:;" id="show_demo">demo</a></span>
-        </div>        
-        <div id="workspace" class="hidden">            
-            <div id="toolbar">
-                <span id="toolbar_logo" style="display: none">
-                    <span class="first">Point</span><span class="last">Out</span>
-                </span>
-                <div id="fb_login" style="padding-top: 10px; padding-left: 10px; display: none">
-                    <a href="javascript:FB.login()"><img src="/images/fb-login-button.png"/></a>
-                </div>
-                <div id="fb_logged" style="display: none; padding: 2px;">
-                    <img src="" width="35px" height="35px" class="fb_picture"/>
-                    <span class="fb_name" style="font-weight: bold"></span>
-                </div>
-            </div>
-            <canvas id="image_canvas" />
         </div>
+        <div id="workspace" style="display: none;">   
+            <div id="toolbar" class="linear_grad">
+                <div id="status" style="display: none;">Uploading to server...</div>
+                <div id="share_link" style="display: none;">Share<input value="" readonly onmousemove="this.select()" /></div> 
+            </div>
+            <canvas id="image_canvas"></canvas>
+            <div id="connected_users">
+            </div>
+        </div>
+        <div id="logged_user" class="user_info" style="display:none">
+            <div class="image">
+                <img width="35" height="35" class="br_3" />
+            </div>
+            <div class="name">
+                <span></span>
+                <br/>
+                <a href="javascript:;" onclick="logout(); return false;" class="logout">Logout</a>
+            </div>            
+        </div>
+        <div id="background" style="display: none;"></div>
+        <div id="fb_login_screen" style="display:none" class="container box_shadow">
+            <fb:login-button size="xlarge" >Login with Facebook</fb:login-button>
+        </div>
+        <div id="big_loader" class="box_shadow br_8" style="display: none"></div>
         <!--Facebook connect-->
         <div id="fb-root"></div>
         <script src="http://connect.facebook.net/en_US/all.js"></script>
-        <script>
-            function updateLoginStatus(logged){
-                if (logged) {                     
-                    FB.api('/me', function(response) {                        
-                        $('#fb_logged .fb_picture').get(0).src = "http://graph.facebook.com/"+response.id+"/picture";
-                        $('#fb_logged .fb_name').html(response.name);
+        <script>                        
 
-                        $('#fb_login').hide();
-                        $('#fb_logged').show();
+            function logout(){
+                FB.api({ method: 'Auth.revokeAuthorization' }, function(response) {  
+                    console.log("Revoke authorization response: ", response);
+                });
+            }
+
+            function updateLoginStatus(logged){
+                var ws = WorkspaceManager.getActiveWorkspace();
+                
+                if (logged) {       
+                    FB.api('/me', function(response) {          
+                        console.log('User info', response);
+
+                        var image = "http://graph.facebook.com/"+response.id+"/picture";
+
+                        $('#logged_user .image img')[0].src = image;
+                        $('#logged_user .name span').html(response.name);
+
+                        $('#logged_user').show();
+
+                        ws.user = { 
+                            name: response.name, 
+                            image: image, id: response.id,
+                            link: response.link
+                        };
+
+                        if(!ws.getConnectedUser(response.id))
+                            ws.users.push(ws.user);
+                        
+
+                        $('#fb_login_screen').hide();
+                        $('#background').hide();
+                        
+                        $(window).trigger('hashchange');
                     });
                 } else {
-                    $('#fb_logged').hide();
-                    $('#fb_login').show();
+                    $('#fb_login_screen').show();
+                    $('#background').show();
+
+                    $('#logged_user').hide();
+                    
+                    ws.user = {};
                 }
             }
 
@@ -124,8 +184,7 @@
                 } else {
                     updateLoginStatus(false);
                 }
-            })
-            
+            })                        
         </script>        
     </body>
 </html>

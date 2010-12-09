@@ -1,6 +1,8 @@
 /* Utils */
 
-* { margin:0; padding:0}
+* { margin:0; padding:0; }
+
+img { border: 0 }
 
 .dbg_r { border: 1px solid red; }
 .dbg_g { border: 1px solid green; }
@@ -14,6 +16,40 @@
     border-radius: 8px
 }
 
+.br_3 {
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px
+}
+
+.box_shadow {
+    -webkit-box-shadow: #777 0px 4px 10px;
+    -moz-box-shadow: #777 0px 4px 10px;
+    box-shadow: #777 0px 4px 10px;
+}
+
+.box_shadow_s {
+    -webkit-box-shadow: #777 0px 2px 5px;
+    -moz-box-shadow: #777 0px 2px 5px;
+    box-shadow: #777 0px 2px 5px;
+}
+
+.linear_grad {
+    background:-webkit-gradient(
+        linear,
+        left bottom,
+        left top,
+        color-stop(0, rgb(240,240,240)),
+        color-stop(1, rgb(255,255,255))
+    );
+
+    background:-moz-linear-gradient(
+        center bottom, 
+        rgb(240,240,240), 
+        rgb(255,255,255)
+    ); 
+}
+
 .clear { clear: both; line-height: 1px; font-size: 1px; }
 
 .align_right { text-align: right; }
@@ -25,6 +61,7 @@ body {
     font-family: helvetica, arial, sans-serif;
     font-size: 12px;
     color: #333;
+    background: url('/images/bg.png');
 }
 
 textarea {
@@ -43,51 +80,47 @@ textarea {
     border: 1px solid #AAA;    
     padding: 20px 25px 25px;
     width: 450px;
+    height: 100px;
     left: 50%;
-    top: 50%;
+    top: 30%;
     margin-left: -225px;
-    margin-top: -160px;    
     position: absolute;
 
     font-size: 21px;
 }
 
-#workspace {
+#workspace {    
     width: 100%;
     height: 100%;
-    padding-top: 40px; //for toolbar
+    padding-top: 41px; //for toolbar
+
+    background: #000;
+}
+
+#workspace canvas {
+    position: absolute;
+    top: 41px;
+    left: 50%;
 }
 
 #toolbar {
     position: fixed;
-    top: 0px;
-    left:0px;
     width: 100%;
     height: 40px;
-    background: #fff;
-
-    -webkit-box-shadow: #777 0px 0px 10px;
-    -moz-box-shadow: #777 0px 0px 10px;
-
-    z-index: 10;
+    border-bottom: 1px solid #ccc;
+    top: 0px;
+    left: 0px;
+    z-index: 2;
 }
 
-#toolbar_logo {
-    font-size: 32px;
-    padding-left: 10px;
-    font-weight: bold;
-    font-family: Verdana;
-}
-
-#toolbar_logo span { margin: 0; padding:0;}    
-#toolbar_logo span.first { color: #000; } 
-#toolbar_logo span.last { color: #aaa; } 
+/********* Point **********/
 
 .point {
     position: absolute;
     margin-left: -15px;
     margin-top: -15px;
     cursor: pointer;
+    z-index: 1;
 }
 
 .point .label {
@@ -180,10 +213,12 @@ textarea {
 }
 
 .point .form .save {
-    padding: 1px 7px 1px 7px;
+    padding: 0px 7px 0px 7px;
     cursor: pointer;
     position: absolute;
+    font-size: 11px;
     left: 0px;
+    bottom: -1px;
 }
 
 .point .form .delete {
@@ -194,7 +229,7 @@ textarea {
 
     position: absolute;
     right: 0px;
-    bottom: -3px;
+    bottom: 0px;
 }
 
 
@@ -232,7 +267,7 @@ textarea {
 /* Add comment */
 
 .point .new_comment_container {
-    text-align: right;
+    text-align: center;
     padding-top: 5px;
     padding-right: 5px;
     padding-bottom: 25px;
@@ -255,7 +290,127 @@ textarea {
     padding: 1px 7px 1px 7px;
     cursor: pointer;
     position: absolute;
-    right: 7px;
-    bottom: 7px;
+    font-size: 12px;
+    right: 6px;
+    bottom: 2px;
 }
 .point .new_comment_container.colapsed .submit { display: none; }
+
+.point .new_comment .fb_login {
+}
+
+/****************/
+
+#big_loader {
+    position: fixed; 
+    z-index: 12; 
+    text-align: center;
+    
+    width: 300px;
+    font-weight: bold;
+    font-size: 30px;
+    padding: 20px;
+    background: white;
+
+    margin-top: 200px; 
+    left: 50%;
+    margin-left: -150px;
+    z-index: 12; 
+}
+
+/***********************/
+#fb_login_screen {
+    position: fixed;     
+    margin-top: 200px; 
+    left: 50%;
+    margin-left: -150px;
+    z-index: 12; 
+}
+
+/*****************/
+#logged_user {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    padding: 3px;
+    height: 35px;
+    z-index: 3;
+}
+
+#background {
+    position: fixed;
+    z-index: 11;
+    width: 100%;
+    height: 100%;
+
+    background: rgba(255,255,255, 0.2);
+}
+
+#logged_user div { float: left; margin-right: 5px; }
+
+.user_info .name span { font-weight: bold; }
+.user_info .name { line-height: 18px;}
+.user_info .name .logout { color: #5D8AA8; text-decoration: none; }
+.user_info .name .logout:hover { color: blue; text-decoration: underline; }
+
+/*********** Toolbar ******************/
+#share_link {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    font-size: 15px;
+    line-height: 30px;    
+    height: 30px;
+    display: none;
+}
+
+#share_link input {
+    margin-left: 10px;
+    margin-right: 2px;
+    border: 1px solid #ccc;
+    padding: 3px;
+    background: #eee;
+    cursor: text;
+    width: 200px;
+}
+
+#status {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    font-size: 15px;
+
+    background: url(/images/ajax-loader.gif) center left no-repeat;
+
+    padding-left: 22px;
+}
+
+/**** Connected Users ***********/
+#connected_users {
+    position: fixed;
+    bottom: 0px;
+    right: 0px;
+}
+
+#connected_users li {
+    margin: 0;
+    padding:0;
+}
+
+#connected_users li {
+    color: #333;
+    border: 1px solid #999;
+    border-right: none;
+    display: inline;
+    float: left;
+    padding: 5px;
+
+    font-size: 11px;
+    font-weight: bold;
+
+    cursor: default;
+}
+
+#connected_users li img {
+    margin-left: 10px;
+}
