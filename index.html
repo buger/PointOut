@@ -26,19 +26,28 @@
         <script src="/js/main.js"></script>
 
         <script id="connected_users_template" type="text/x-jquery-tmpl">
-            <ul>
-                {{each users}}
-                    {{if $value.id != current_user.id}}
-                        <li class="linear_grad" title="Users watching this project right now">${$value.name}<img src="/images/green_dot.png" /></li>
-                    {{/if}}
-                {{/each}}
-            </ul>
+        {{each users}}
+            {{if $value.id != current_user.id}}
+            <a class="linear_grad br_8 " title="Users watching this project right now" href="${$value.link}" target='_blank'>${$value.name}<img src="/images/green_dot.png" /></a>
+            {{/if}}
+        {{/each}}
         </script>
         <script>
             var connected_users_template = $('#connected_users_template');
         </script>
+
+        <script id="notification_template" type="text/x-jquery-tmpl">
+            <div class="notification br_8 linear_grad box_shadow_s">
+                <div class="image"><img width="35px" height="35px" src="${image}"/></div>
+                <div class="text">${text}</div>
+            </div>
+        </script>
+        <script>
+            var notification_template = $('#notification_template');
+        </script>
+
         <script id="point_template" type="text/x-jquery-tmpl">
-            <div class='point ${point.color}' style='top:${point.y}px; left:${point.x}px' id="${point.uuid}">
+            <div class='point' style='top:${point.y}px; left:${point.x}px' id="point_${point.label}">
                 <div class='label'>${point.label}</div>
                 <div class='overview triangle-border top'>
                     {{each point.comments}}
@@ -89,9 +98,10 @@
         <div id="start_screen" class="br_8" style="display: none">
             <label>Upload image</label>
             <input type="file" id="file_uploader" />
-            <br/>
-            <br/>
-            <span style="font-size: 30px">Try <a href="javascript:;" id="show_demo">demo</a></span>
+            <br />
+            <br />
+            <img src="/images/firefox.png" />
+            <img src="/images/chrome.png" />
         </div>
         <div id="workspace" style="display: none;">   
             <div id="toolbar" class="linear_grad">
@@ -99,8 +109,9 @@
                 <div id="share_link" style="display: none;">Share<input value="" readonly onmousemove="this.select()" /></div> 
             </div>
             <canvas id="image_canvas"></canvas>
-            <div id="connected_users">
-            </div>
+            <div id="connected_users"></div>
+
+            <div id="notifications"></div>
         </div>
         <div id="logged_user" class="user_info" style="display:none">
             <div class="image">
@@ -122,50 +133,6 @@
         <script src="http://connect.facebook.net/en_US/all.js"></script>
         <script>                        
 
-            function logout(){
-                FB.api({ method: 'Auth.revokeAuthorization' }, function(response) {  
-                    console.log("Revoke authorization response: ", response);
-                });
-            }
-
-            function updateLoginStatus(logged){
-                var ws = WorkspaceManager.getActiveWorkspace();
-                
-                if (logged) {       
-                    FB.api('/me', function(response) {          
-                        console.log('User info', response);
-
-                        var image = "http://graph.facebook.com/"+response.id+"/picture";
-
-                        $('#logged_user .image img')[0].src = image;
-                        $('#logged_user .name span').html(response.name);
-
-                        $('#logged_user').show();
-
-                        ws.user = { 
-                            name: response.name, 
-                            image: image, id: response.id,
-                            link: response.link
-                        };
-
-                        if(!ws.getConnectedUser(response.id))
-                            ws.users.push(ws.user);
-                        
-
-                        $('#fb_login_screen').hide();
-                        $('#background').hide();
-                        
-                        $(window).trigger('hashchange');
-                    });
-                } else {
-                    $('#fb_login_screen').show();
-                    $('#background').show();
-
-                    $('#logged_user').hide();
-                    
-                    ws.user = {};
-                }
-            }
 
             FB.init({appId: '127727177287107', status: true, cookie: true, xfbml: true});
             FB.Event.subscribe('auth.sessionChange', function(response) {

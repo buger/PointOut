@@ -111,7 +111,6 @@ PointOut.loadProject = function(options){
     var xhr = new XMLHttpRequest();
     xhr.open('POST', '/load/'+options.project_id, true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.send("user_id="+options.user_id);
 
     xhr.onreadystatechange = function(){
         if(xhr.readyState == 4){
@@ -124,4 +123,27 @@ PointOut.loadProject = function(options){
             }
         }
     };
+    
+    xhr.send(options.data.toQueryString());
+}
+
+PointOut.addComment = function(options){
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/comment/'+options.project_id, true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onreadystatechange = function(){
+        if(xhr.readyState == 4){
+            if(xhr.status == 200) {
+                console.log('Comment added');
+                //var data = JSON.parse(xhr.responseText);
+            
+                //options.success(data);
+            } else {
+                console.error("Error while creating project:", xhr);
+            }
+        }
+    };
+
+    xhr.send(options.data.toQueryString());
 }

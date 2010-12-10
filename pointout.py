@@ -2,6 +2,7 @@ import os
 import base64
 import re
 import logging
+import datetime
 
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -13,22 +14,6 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext.webapp import template
 
 import simplejson as json
-from jinja2 import Environment, FunctionLoader
-
-def template_loader(name):
-    fname = os.path.join(os.path.dirname(__file__), name)
-
-    with open(name, "rb") as f:
-        return f.read()
-
-jinja_env = Environment(
-        loader = FunctionLoader(template_loader),
-        block_start_string = '[%',
-        block_end_string = '%]',
-        variable_start_string = '[[',
-        variable_end_string = ']]')
-
-#main_page_template = jinja_env.get_template('index.html')
 
 
 
@@ -53,6 +38,8 @@ class Project(db.Model):
 
 
     def connect_user(self, user_id):
+        self.broadcast_message({'action':'user_connected', 'user':str(user_id)})
+
         project_users = memcache.get("%s_users" % self.key())
 
         if project_users is not None:
@@ -63,19 +50,17 @@ class Project(db.Model):
 
         memcache.set("%s_users" % self.key(), project_users, 3600)
 
-        self.broadcast_message({'action':'user_connected', 'user':str(user_id)})
-
         return project_users
 
 
-    def broadcast_message(self, message):
+    def broadcast_message(self, message, sender = None):
         users = self.connected_users()
-
+        message = json.dumps(message)
 
         for user_id in users:
-            logging.info("Sending message to '%s'" % user_id)
-
-            channel.send_message(self.channel_key(user_id), json.dumps(message))
+            if user_id != sender:
+                logging.info("Sending message '%s' to '%s'" % (message, user_id))
+                channel.send_message(self.channel_key(user_id), message)
 
 
 class PointOutHandler(webapp.RequestHandler):
@@ -94,8 +79,11 @@ class LoadProject(PointOutHandler):
         project = Project.get_by_id(int(project_id))
         user_id = self.request.get('user_id')
 
-        token = channel.create_channel(project.channel_key(user_id))
-        project.connect_user(int(user_id))
+        if self.request.get('updating') == '':
+            token = channel.create_channel(project.channel_key(user_id))
+            project.connect_user(int(user_id))
+        else:
+            token = None
 
         if project:
             self.response.headers['Content-Type'] = 'application/json'
@@ -108,13 +96,32 @@ class LoadProject(PointOutHandler):
 class SaveProject(PointOutHandler):
     def post(self, project_id):
         project = Project.get_by_id(int(project_id))
+        user = int(self.request.get('user'))
 
         if project:
             project.data = self.request.get('points')
             project.put()
 
-            message = {'method':'project_updated'}
-            channel.send_message(project_id, json.dumps(message))
+            self.render_json({'status':'ok'})
+
+
+class AddComment(PointOutHandler):
+    def post(self, project_id):
+        project = Project.get_by_id(int(project_id))
+
+        if project:
+            user = int(self.request.get('user'));
+
+            message = {
+                    'action': 'comment_added',
+                    'user': user,
+                    'user_name': self.request.get('user_name'),
+                    'point': self.request.get('point'),
+                    'text': self.request.get('comment'),
+                    'image': self.request.get('image')
+            }
+
+            project.broadcast_message(message, user)
 
             self.render_json({'status':'ok'})
 
@@ -136,8 +143,10 @@ class CreateProject(PointOutHandler):
             project.image = db.Blob(base64.b64decode(imgb64))
             project.image_content_type = content_type
             project.creator = int(self.request.get('user_id'))
+            project.data = '[]';
             project.put()
 
+            project.connect_user(project.creator)
             token = channel.create_channel(project.channel_key(project.creator))
 
             self.render_json({'id':project.key().id(), 'token': token})
@@ -156,6 +165,7 @@ application = webapp.WSGIApplication(
                                       ('/save/([^/]+)?', SaveProject),
                                       ('/image/([^/]+)?', GetImage),
                                       ('/load/([^/]+)?', LoadProject),
+                                      ('/comment/([^/]+)?', AddComment),
                                       ('/([^/]+)?', RedirectToIndex)],
                                      debug=True)
 

@@ -40,11 +40,10 @@ $(document).ready(function(){
     });
 
     $('#show_demo').bind('click', function(){
-        loadDemo();
+        $.bbq.pushState("#1");
     })
 
     WorkspaceManager.createWorkspace();
-    //loadDemo();
 })
 
 function showWorkspace(){
@@ -52,36 +51,49 @@ function showWorkspace(){
     $('#start_screen').hide();
 }
 
-function loadDemo(){
-    WorkspaceManager.getActiveWorkspace().loadProject("/images/demo_image.png", 
-        [
-            {
-                'label': '1',
-                'x': 300,
-                'y': 200,
-                'color': 'blue',
-                'comments': [
-                    {
-                        'author_name': 'ted',
-                        'text': 'Test comment. This a long long long comment. bla bla bla blaaaaaaaaa.Test comment. This a long long long comment. bla bla bla blaaaaaaaaa.'
-                    }
-                ]
-            },
-            {
-                'label': '2',
-                'x': 250,
-                'y': 400,
-                'color': 'red',
-                'comments': [
-                    {
-                        'author_name': 'bob',                        
-                        'text': 'Test comment 2'
-                    }
-                ]
-            }         
-        ]
-    )
+
+function logout(){
+    FB.api({ method: 'Auth.revokeAuthorization' }, function(response) {  
+        console.log("Revoke authorization response: ", response);
+    });
+}
+
+function updateLoginStatus(logged){
+    var ws = WorkspaceManager.getActiveWorkspace();
     
-    showWorkspace();
+    if (logged) {       
+        FB.api('/me', function(response) {          
+            console.log('User info', response);
+
+            var image = "http://graph.facebook.com/"+response.id+"/picture";
+
+            $('#logged_user .image img')[0].src = image;
+            $('#logged_user .name span').html(response.name);
+
+            $('#logged_user').show();
+
+            ws.user = { 
+                name: response.name, 
+                image: image, id: response.id,
+                link: response.link
+            };
+
+            if(!ws.getConnectedUser(response.id))
+                ws.users.push(ws.user);
+            
+
+            $('#fb_login_screen').hide();
+            $('#background').hide();
+            
+            $(window).trigger('hashchange');
+        });
+    } else {
+        $('#fb_login_screen').show();
+        $('#background').show();
+
+        $('#logged_user').hide();
+        
+        ws.user = {};
+    }
 }
 

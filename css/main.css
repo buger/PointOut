@@ -77,6 +77,8 @@ textarea {
     -webkit-transition: all 0,5s;
     background-color: white;
 
+    text-align: center;
+
     border: 1px solid #AAA;    
     padding: 20px 25px 25px;
     width: 450px;
@@ -100,7 +102,6 @@ textarea {
 #workspace canvas {
     position: absolute;
     top: 41px;
-    left: 50%;
 }
 
 #toolbar {
@@ -110,7 +111,7 @@ textarea {
     border-bottom: 1px solid #ccc;
     top: 0px;
     left: 0px;
-    z-index: 2;
+    z-index: 10;
 }
 
 /********* Point **********/
@@ -324,7 +325,7 @@ textarea {
     margin-top: 200px; 
     left: 50%;
     margin-left: -150px;
-    z-index: 12; 
+    z-index: 13; 
 }
 
 /*****************/
@@ -334,12 +335,12 @@ textarea {
     left: 0px;
     padding: 3px;
     height: 35px;
-    z-index: 3;
+    z-index: 11;
 }
 
 #background {
     position: fixed;
-    z-index: 11;
+    z-index: 12;
     width: 100%;
     height: 100%;
 
@@ -388,29 +389,51 @@ textarea {
 /**** Connected Users ***********/
 #connected_users {
     position: fixed;
-    bottom: 0px;
-    right: 0px;
+    bottom: 4px;
+    right: 10px;
+    z-index: 4;
 }
 
-#connected_users li {
-    margin: 0;
-    padding:0;
-}
-
-#connected_users li {
+#connected_users a {
     color: #333;
     border: 1px solid #999;
-    border-right: none;
-    display: inline;
     float: left;
-    padding: 5px;
+    padding: 5px 10px 5px 10px;
+    text-decoration: none;
 
     font-size: 11px;
     font-weight: bold;
 
-    cursor: default;
+    cursor: pointer;
+
+    opacity: 0.7;
 }
 
-#connected_users li img {
-    margin-left: 10px;
+#connected_users a img { margin-left: 10px; }
+
+#connected_users a:hover { opacity: 1 }
+
+/******** Notifications ***********/
+
+#notifications {
+    position:fixed;
+    top: 45px;
+    right: 5px;
+}
+
+#notifications .notification {
+    width: 250px;
+    height: 35px;
+    padding: 10px;
+    position: relative;
+    margin-bottom: 10px;
+    opacity: 0.9;
+    font-size: 11px;
+    overflow: hidden;
+}
+
+#notifications .notification div { float: left; }
+
+#notifications .notification .text {
+    padding-left: 10px;
 }

@@ -69,11 +69,11 @@ Workspace.prototype.getLatestActivePoint = function(offset){
             return next_point;
 }
 
-Workspace.prototype.getPointByUUID = function(uuid){
-    console.info("Trying to find point with uuid: ", uuid);
+Workspace.prototype.getPointByLabel = function(label){
+    console.info("Trying to find point with label: ", label);
 
     for(var i=0; i<this.points.length; i++){
-        if(this.points[i].uuid == uuid)
+        if(parseInt(this.points[i].label) == parseInt(label))
             return this.points[i];
     }
 }
@@ -85,7 +85,6 @@ Workspace.prototype.addPoint = function(x,y){
         x:x, 
         y:y, 
         color: 'blue', 
-        uuid: Math.uuidFast(), 
         comments:[
             {
                 author_name:this.user.name, 
@@ -111,14 +110,14 @@ Workspace.prototype.saveActivePoints = function(){
     var active_points = $('#workspace .point.opened');
 
     for(var i=0; i<active_points.length; i++){
-        this.savePoint(this.getPointByUUID(active_points[i].id));
+        this.savePoint(this.getPointByLabel(active_points[i].id.replace(/point_/,'')));
     }
 }
 
 Workspace.prototype.savePoint = function(point, stay_opened){
     console.info("Saving point: ", point);
 
-    var point_js = $('#'+point.uuid);
+    var point_js = $('#point_'+point.label);
     var updated_comments = point_js.find('.comment.edit_mode');    
 
     for(var i=0; i<updated_comments.length; i++){
@@ -139,6 +138,20 @@ Workspace.prototype.savePoint = function(point, stay_opened){
         else
             if(c_text)
                 point.comments.push(c);
+
+        PointOut.addComment({
+            project_id:this.project_id,
+            data:{
+                user: this.user.id,
+                user_name: c.author_name,
+                comment: c.text,
+                image: c.author_image,
+                point: point.label
+            },
+            success: function(){
+
+            }
+        })
     }
 
     point_js.remove();
@@ -147,7 +160,8 @@ Workspace.prototype.savePoint = function(point, stay_opened){
     if(stay_opened)
         point_js.addClass('opened');
     
-    this.saveProject();
+    if(updated_comments.length > 0)
+        this.saveProject();
 }
 
 Workspace.prototype.renderImage = function(callback){
@@ -158,8 +172,6 @@ Workspace.prototype.renderImage = function(callback){
         this.canvas.width = img.width;
         this.canvas.height = img.height;
 
-        this.canvas.style.marginLeft = (-img.width/2)+'px'
-
         this.context.drawImage(img, 0, 0, img.width, img.height);
         
         if(callback)
@@ -168,6 +180,13 @@ Workspace.prototype.renderImage = function(callback){
 }
 
 Workspace.prototype.renderPoint = function(point, edit_comment){
+    var previous_point = $('#point_'+point.label);
+    if(previous_point.find('.overview').is(':visible') && edit_comment == undefined)
+        edit_comment = -1
+    
+    console.log('previous point:', previous_point);
+    previous_point.remove();
+
     var point_js = point_template.tmpl({edit_comment: edit_comment, point: point, user:this.user}).appendTo("#workspace");
 
     point_js.draggable({
@@ -217,7 +236,10 @@ Workspace.prototype.renderPoint = function(point, edit_comment){
     });
     */
 
-    point_js.mouseover(function(){this.style.zIndex = 5})
+    point_js.mouseover(function(){
+                this.style.zIndex = 5;
+                $(this).removeClass('red');
+            })
             .mouseout(function(){
                 if(!$(this).hasClass('opened')) 
                     this.style.zIndex = 1;
@@ -227,15 +249,11 @@ Workspace.prototype.renderPoint = function(point, edit_comment){
 }
 
 Workspace.prototype.renderPoints = function(){
-    this.clear();
-
     for(var i=0; i<this.points.length; i++){
         if(this.points[i].deleted)
             continue;
 
         console.log("Rendering point: ", this.points[i]);
-
-        this.points[i].uuid = Math.uuidFast();
         
         this.renderPoint(this.points[i])
     }
@@ -273,6 +291,8 @@ Workspace.prototype.createProject = function(image, points){
                 $('#share_link input').val('http://pointoutapp.appspot.com/'+this.project_id);
                 $('#share_link').show();
                 $('#status').hide();
+
+                this.createChannel(response.token);
             }.bind(this),
             error: function(response){
                 console.error('error!');
@@ -283,14 +303,20 @@ Workspace.prototype.createProject = function(image, points){
     )
 }
 
-Workspace.prototype.updateProject = function(){
+Workspace.prototype.updateProject = function(callback){
     PointOut.loadProject({
         project_id: this.project_id,
-        user_id: this.user.id,
+        data: {
+            user_id: this.user.id,
+            updating: true
+        },
         success: function(response){
             this.points = response.points;
 
             this.renderPoints();
+
+            if(callback)
+                callback();
         }.bind(this)
     })
 }
@@ -304,27 +330,35 @@ Workspace.prototype.loadProject = function(project_id){
 
     this.image = '/image/'+project_id;
 
-    this.renderImage(function(){ }.bind(this));
+    this.renderImage(function(){ 
+        this.showLoader('Loading project...');
 
-    PointOut.loadProject({
-        project_id: project_id,
-        user_id: this.user.id,
-        success: function(response){
-            console.log('Loading project:', response);
+        PointOut.loadProject({
+            project_id: project_id,
+            data: {
+                user_id: this.user.id
+            },
+            success: function(response){
 
-            this.points = response.points;
-        
-            this.renderPoints();
+                this.points = response.points;
+            
+                this.renderPoints();
 
-            this.hideLoader();
+                this.hideLoader();
 
-            this.createChannel(response.token);
+                this.createChannel(response.token);
 
-            for(var i=0; i<response.connected_users.length; i++){
-                this.addUser(response.connected_users[i]);
-            }
-        }.bind(this)
-    })
+                for(var i=0; i<response.connected_users.length; i++){
+                    this.addUser(response.connected_users[i]);
+                }
+
+                $('#share_link input').val('http://pointoutapp.appspot.com/'+this.project_id);
+                $('#share_link').show();
+                $('#status').hide();
+
+            }.bind(this)
+        })               
+    }.bind(this));
 }
 
 Workspace.prototype.showLoader = function(text){
@@ -340,16 +374,17 @@ Workspace.prototype.hideLoader = function(){
 }
 
 Workspace.prototype.createChannel = function(channel_token){
-    this.channel = new goog.appengine.Channel(channel_token);
-    this.channel.open();
+    console.log('Opening channel: ', channel_token);
 
-    var socket = this.channel.open();    
-    socket.onopen = this.onChannelOpened.bind(this);
-    socket.onmessage = this.onChannelMessage.bind(this);
-    socket.onerror = function(msg) { 
+    this.channel = new goog.appengine.Channel(channel_token);
+
+    this.socket = this.channel.open();    
+    this.socket.onopen = this.onChannelOpened.bind(this);
+    this.socket.onmessage = this.onChannelMessage.bind(this);
+    this.socket.onerror = function(msg) { 
         console.error("Socket error:", msg);
     };
-    socket.onclose = function(){
+    this.socket.onclose = function(){
         console.error("Socket closed");
     }
 }
@@ -359,24 +394,35 @@ Workspace.prototype.onChannelOpened = function(){
 }
 
 Workspace.prototype.onChannelMessage = function(msg){
-    console.log('Message data: ', msg)
-
     var data = JSON.parse(msg.data);
 
+    console.log('Message data: ', data);
+
     if(data.action == 'user_connected')        
-        this.addUser(user_id);
-    else if(data.action = 'project_updated')
-        this.updateProject();        
+        this.addUser(data.user);
+    else if(data.action = 'comment_added'){
+        this.updateProject(function(){                    
+            $('#point_'+data.point).addClass('red');
+
+            this.addNotification(data.image, data.text);
+        }.bind(this));
+    } else
+        console.log("Unknown message", data.action);
 }
 
 Workspace.prototype.addUser = function(user_id){
     if(!this.getConnectedUser(user_id))
         FB.api('/'+user_id, function(response){
-            this.users.push({
+            var user = {
                 id: response.id,
                 name: response.name,
+                link: response.link,
                 image: "http://graph.facebook.com/"+response.id+"/picture"
-            });
+            }
+
+            this.users.push(user);
+
+            this.addNotification(user.image, user.name+" connected");
 
             this.renderConnectedUsers();
         }.bind(this))
@@ -395,6 +441,16 @@ Workspace.prototype.getConnectedUser = function(user_id){
             return this.users[i];    
 
     return false
+}
+
+Workspace.prototype.addNotification = function(image, text){
+    var data = {image:image, text:text};
+
+    var n = notification_template.tmpl(data).appendTo('#notifications');
+
+    setTimeout(function(){
+        n.remove();
+    }, 3000)
 }
 
 // Right now it's just mock
